@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TypeRidder 🏰 — Leer Blind Typen</title>
+<style>
+:root{
+  --pri:#6C5CE7;--pri-l:#a29bfe;--pri-d:#4834d4;
+  --gold:#F9CA24;--gold-d:#e67e22;
+  --ok:#00B894;--ok-l:#55efc4;
+  --err:#D63031;--err-l:#ff7675;
+  --bg:#F0EEF8;--card:#fff;
+  --txt:#2D3436;--mut:#636e72;--lgt:#b2bec3;--bdr:#dfe6e9;
+  --flp:#e17055;--flr:#f0932b;--flm:#f9ca24;--fli:#6ab04c;
+  --fth:#dfe6e9;--fri:#4fc3f7;--frm:#9b59b6;--frr:#fd79a8;--frp:#e17055;
+  --r:14px;--rs:8px;--sh:0 4px 20px rgba(108,92,231,.15);--sz:18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:var(--sz);background:var(--bg);color:var(--txt);line-height:1.5}
+.screen{display:none;flex-direction:column;min-height:100vh;animation:fadeIn .25s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.sh{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--card);border-bottom:2px solid var(--bdr);position:sticky;top:0;z-index:100}
+.sh-title{flex:1;text-align:center;font-weight:700;color:var(--pri);font-size:1.05rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--r);font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-pri{background:var(--pri);color:#fff;box-shadow:0 4px 12px rgba(108,92,231,.35)}
+.btn-pri:hover{background:var(--pri-d);transform:translateY(-2px)}
+.btn-sec{background:var(--card);color:var(--pri);border:2px solid var(--pri)}
+.btn-sec:hover{background:var(--bg)}
+.btn-gold{background:var(--gold);color:var(--txt);box-shadow:0 4px 12px rgba(249,202,36,.4)}
+.btn-gold:hover{background:var(--gold-d);transform:translateY(-2px)}
+.btn-icon{background:transparent;border:none;font-size:1.3rem;cursor:pointer;padding:8px;border-radius:50%;transition:background .2s}
+.btn-icon:hover{background:var(--bg)}
+.btn-big{font-size:1.25rem;padding:16px 36px;border-radius:50px}
+.btn-sm{padding:8px 16px;font-size:.9rem}
+
+/* WELCOME */
+#s-welcome{background:linear-gradient(135deg,#6C5CE7,#a29bfe 50%,#fd79a8);justify-content:center;align-items:center}
+.wlc-wrap{text-align:center;color:#fff;padding:40px 20px;max-width:580px;width:100%}
+.wlc-icon{font-size:5rem;animation:float 3s ease-in-out infinite}
+.wlc-title{font-size:3rem;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.2);margin:8px 0}
+.wlc-sub{font-size:1.1rem;opacity:.9;margin-bottom:28px}
+.pip-bubble{display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,.18);border-radius:20px;padding:18px;margin-bottom:28px;text-align:left}
+.pip-big{font-size:2.8rem;flex-shrink:0}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* PROFILES */
+#s-profiles{background:var(--bg)}
+.profiles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;padding:20px;flex:1}
+.pcard{background:var(--card);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;border:3px solid transparent;transition:all .2s;box-shadow:var(--sh)}
+.pcard:hover{border-color:var(--pri);transform:translateY(-4px)}
+.pcard.new-p{border:3px dashed var(--lgt);color:var(--mut)}
+.pcard-av{font-size:3rem;margin-bottom:6px}
+.pcard-name{font-weight:700;font-size:1rem}
+.pcard-info{font-size:.8rem;color:var(--mut);margin-top:3px}
+.pcard-badge{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--pri-l);color:#fff}
+.profiles-footer{padding:14px 20px;display:flex;gap:10px;justify-content:center;background:var(--card);border-top:2px solid var(--bdr)}
+
+/* CREATE PROFILE */
+#s-create-profile{background:var(--bg)}
+.cform{max-width:460px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+.fg label{font-weight:600;display:block;margin-bottom:6px}
+.fg input{width:100%;padding:13px;border:2px solid var(--bdr);border-radius:var(--r);font-size:1.1rem;font-family:inherit;background:var(--card)}
+.fg input:focus{outline:none;border-color:var(--pri)}
+.av-grid{display:flex;gap:10px;flex-wrap:wrap}
+.av-opt{font-size:2.3rem;cursor:pointer;padding:8px;border-radius:var(--r);border:3px solid transparent;transition:all .2s}
+.av-opt.sel{border-color:var(--pri);background:var(--bg)}
+.lay-opts{display:flex;gap:10px}
+.lay-opt{flex:1;padding:14px;text-align:center;cursor:pointer;border:3px solid var(--bdr);border-radius:var(--r);background:var(--card);transition:all .2s}
+.lay-opt.sel{border-color:var(--pri);background:var(--bg)}
+.lay-name{font-weight:700;font-size:1.1rem;color:var(--pri)}
+.lay-desc{font-size:.8rem;color:var(--mut);margin-top:2px}
+
+/* WORLD MAP */
+#s-worldmap{background:var(--bg);overflow-y:auto}
+.wm-hdr{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--card);border-bottom:2px solid var(--bdr)}
+.wm-av{font-size:2.2rem}
+.wm-info{flex:1}
+.wm-name{font-weight:700}
+.xp-bar{height:8px;background:var(--bdr);border-radius:4px;overflow:hidden;margin-top:4px}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--pri-l));border-radius:4px;transition:width .6s}
+.wm-lv{text-align:center;background:var(--pri);color:#fff;border-radius:var(--r);padding:8px 14px;flex-shrink:0;min-width:64px}
+.wm-lv strong{font-size:1.6rem;display:block;line-height:1}
+.wm-lv span{font-size:.7rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+.wm-lv-title{font-size:.82rem;color:var(--pri);font-weight:600;margin-top:2px}
+.wm-xp-info{font-size:.75rem;color:var(--mut);margin-top:3px}
+.worlds-wrap{padding:20px;display:flex;flex-direction:column;gap:20px}
+.world-card{border-radius:18px;overflow:hidden;box-shadow:var(--sh)}
+.world-hdr{padding:14px 20px;display:flex;align-items:center;gap:10px;color:#fff}
+.world-em{font-size:2rem}
+.world-nm{font-size:1.15rem;font-weight:700;flex:1}
+.world-prog{font-size:.85rem;opacity:.9}
+.world-lessons{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px;background:var(--card)}
+.lnode{display:flex;flex-direction:column;align-items:center;cursor:pointer;width:80px;transition:all .2s}
+.lnode:hover:not(.locked) .lnode-c{transform:scale(1.1)}
+.lnode-c{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;border:3px solid transparent;margin-bottom:4px;transition:all .2s}
+.lnode.locked .lnode-c{background:#f0f0f0;color:var(--lgt);border-color:var(--bdr)}
+.lnode.avail .lnode-c{background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;border-color:var(--pri);box-shadow:0 4px 12px rgba(108,92,231,.4);animation:pglow 2s infinite}
+.lnode.d1 .lnode-c{background:linear-gradient(135deg,#f0932b,#feca57);color:#fff}
+.lnode.d2 .lnode-c{background:linear-gradient(135deg,#6ab04c,#badc58);color:#fff}
+.lnode.d3 .lnode-c{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#fff;box-shadow:0 4px 12px rgba(249,202,36,.5)}
+.lnode-stars{font-size:.6rem;height:14px;display:flex;justify-content:center;gap:1px}
+.lnode-lbl{font-size:.65rem;color:var(--mut);text-align:center;line-height:1.2}
+@keyframes pglow{0%,100%{box-shadow:0 4px 12px rgba(108,92,231,.4)}50%{box-shadow:0 4px 22px rgba(108,92,231,.75)}}
+
+/* LESSON INTRO */
+#s-lesson-intro{background:var(--bg);overflow-y:auto}
+.intro-body{padding:20px;max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.intro-story{background:var(--card);border-radius:var(--r);padding:18px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--sh)}
+.pip-md{font-size:2.5rem;flex-shrink:0}
+.story-bub{background:var(--bg);border-radius:var(--r);padding:14px;flex:1;position:relative}
+.story-bub::before{content:'';position:absolute;left:-9px;top:18px;border:5px solid transparent;border-right-color:var(--bg)}
+.nk-lbl{font-size:.85rem;color:var(--mut);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.nk-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.nk-pill{padding:8px 18px;background:var(--pri);color:#fff;border-radius:30px;font-weight:700;font-size:1.2rem;box-shadow:0 3px 8px rgba(108,92,231,.3);animation:bIn .4s ease}
+@keyframes bIn{0%{transform:scale(0)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.fhint{background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;border-radius:var(--r);padding:14px;text-align:center;font-size:.95rem}
+.etip{background:var(--card);border-radius:var(--r);padding:14px;border-left:4px solid var(--gold);font-size:.9rem;box-shadow:var(--sh)}
+
+/* PRACTICE */
+#s-practice{background:var(--bg)}
+.prac-hdr{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--card);border-bottom:2px solid var(--bdr)}
+.prac-ttl{font-weight:700;flex:1;text-align:center;color:var(--pri)}
+.prac-enum{font-size:.8rem;color:var(--mut);background:var(--bg);padding:3px 10px;border-radius:20px}
+.stats-bar{display:flex;justify-content:center;gap:20px;padding:8px 18px;background:var(--card);border-bottom:2px solid var(--bdr);font-size:.9rem}
+.sitem{display:flex;align-items:center;gap:6px;font-weight:600}
+.sval{color:var(--pri);font-size:1.05rem;font-weight:700;min-width:40px;text-align:right}
+.pip-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;background:rgba(108,92,231,.05);border-bottom:1px solid var(--bdr)}
+.pip-s{font-size:1.4rem}
+.pip-htxt{font-size:.85rem;color:var(--mut);font-style:italic}
+.prac-area{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+.prac-text{font-family:'Courier New',Courier,monospace;font-size:1.9rem;line-height:2.5;background:var(--card);border-radius:var(--r);padding:18px 24px;box-shadow:var(--sh);max-width:100%;word-break:break-all;text-align:center;letter-spacing:.04em}
+.ch{display:inline;border-bottom:3px solid transparent;transition:color .08s,background .08s}
+.ch.pending{color:var(--lgt)}
+.ch.cur{background:var(--pri-l);border-radius:3px;border-bottom:3px solid var(--pri);color:var(--txt);animation:blink .9s steps(1) infinite}
+.ch.ok{color:var(--ok)}
+.ch.bad{color:var(--err);background:rgba(214,48,49,.1);border-radius:3px}
+@keyframes blink{0%,100%{border-bottom-color:var(--pri)}50%{border-bottom-color:transparent}}
+.kb-wrap{padding:10px 14px;background:var(--card);border-top:2px solid var(--bdr)}
+
+/* KEYBOARD */
+.keyboard{display:flex;flex-direction:column;gap:4px;width:100%;max-width:860px;margin:0 auto}
+.kb-row{display:flex;gap:3px}
+.key{flex:1;height:38px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid rgba(0,0,0,.15);transition:all .12s;font-size:.68rem;text-transform:uppercase;position:relative;user-select:none}
+.key.hk::after{content:'·';position:absolute;bottom:1px;right:3px;font-size:.9rem;opacity:.5}
+.key.f-lp{background:var(--flp);color:#fff}
+.key.f-lr{background:var(--flr);color:#fff}
+.key.f-lm{background:var(--flm);color:var(--txt)}
+.key.f-li{background:var(--fli);color:#fff}
+.key.f-th{background:var(--fth);color:var(--mut)}
+.key.f-ri{background:var(--fri);color:#fff}
+.key.f-rm{background:var(--frm);color:#fff}
+.key.f-rr{background:var(--frr);color:#fff}
+.key.f-rp{background:var(--frp);color:#fff}
+.key.w15{flex:1.5}.key.w17{flex:1.75}.key.w2{flex:2}.key.w22{flex:2.25}.key.w27{flex:2.75}.key.w10{flex:10}
+.key.ak{outline:4px solid #000;outline-offset:1px;transform:scale(1.15);z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.key.hit-ok{background:var(--ok)!important;color:#fff!important;transform:scale(1.05)}
+.key.hit-bad{background:var(--err)!important;color:#fff!important;animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* RESULT */
+#s-result{background:linear-gradient(135deg,#f0f0ff,#fff0f8);justify-content:center;align-items:center;text-align:center}
+.res-wrap{max-width:480px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.res-pip{font-size:4rem;animation:bounce 1s ease-in-out infinite}
+.res-title{font-size:1.7rem;font-weight:900;color:var(--pri)}
+.res-msg{color:var(--mut);font-size:.95rem}
+.res-stars{display:flex;gap:10px;margin:4px 0}
+.rstar{font-size:3rem;filter:grayscale(1);transform:scale(0);transition:all .35s}
+.rstar.lit{filter:none;transform:scale(1);animation:spop .4s ease}
+@keyframes spop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+.res-stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.rstat{background:var(--bg);border-radius:var(--r);padding:10px 18px;min-width:85px;text-align:center}
+.rstat .rv{font-size:1.5rem;font-weight:900;color:var(--pri)}
+.rstat .rl{font-size:.75rem;color:var(--mut)}
+.res-xp{background:linear-gradient(135deg,var(--gold),var(--gold-d));border-radius:30px;padding:6px 22px;font-weight:700;color:var(--txt)}
+.res-badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.badge-chip{background:var(--card);border-radius:var(--r);padding:8px 14px;display:flex;align-items:center;gap:6px;box-shadow:var(--sh);font-size:.85rem;animation:bIn .5s ease}
+.res-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* MINI-GAME */
+#s-game{background:linear-gradient(180deg,#1a1a2e,#16213e);color:#fff;overflow:hidden}
+.game-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:2px solid rgba(255,255,255,.1)}
+.game-ttl{font-size:1.1rem;font-weight:700;flex:1}
+.game-st{font-size:1rem;font-weight:600}
+.game-area{position:relative;flex:1;overflow:hidden}
+.fl-letter{position:absolute;font-size:2.2rem;font-weight:700;padding:5px 12px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);border-radius:10px;transition:background .15s}
+.fl-letter.caught{background:var(--ok)!important;border-color:var(--ok);animation:cpop .3s forwards}
+@keyframes cpop{to{transform:scale(2);opacity:0}}
+.game-foot{padding:12px;text-align:center;color:rgba(255,255,255,.6);font-size:.9rem}
+.game-end{position:absolute;inset:0;background:rgba(26,26,46,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.game-end.show{display:flex}
+
+/* SETTINGS */
+#s-settings,#s-dashboard,#s-certificate{background:var(--bg);overflow-y:auto}
+.set-body{max-width:540px;margin:0 auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.set-card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.set-card h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin-bottom:14px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.set-row:last-child{border-bottom:none}
+.set-lbl{font-weight:600;font-size:.9rem}
+.set-dsc{font-size:.75rem;color:var(--mut);margin-top:1px}
+.toggle{position:relative;width:50px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tslider{position:absolute;inset:0;background:var(--lgt);border-radius:13px;cursor:pointer;transition:.3s}
+.tslider::before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.tslider{background:var(--pri)}
+.toggle input:checked+.tslider::before{transform:translateX(24px)}
+.sel-ctrl{padding:7px 11px;border:2px solid var(--bdr);border-radius:var(--rs);font-size:.9rem;font-family:inherit;background:var(--card);cursor:pointer}
+
+/* DASHBOARD */
+.dash-body{padding:20px;max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.dstat{background:var(--card);border-radius:var(--r);padding:18px;text-align:center;box-shadow:var(--sh)}
+.dstat .dv{font-size:1.8rem;font-weight:900;color:var(--pri)}
+.dstat .dl{font-size:.8rem;color:var(--mut)}
+.dsec h3{font-size:1rem;font-weight:700;margin-bottom:10px}
+.wpm-chart{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px}
+.cbar{flex:1;background:var(--pri-l);border-radius:3px 3px 0 0;min-width:5px;transition:height .5s;position:relative;cursor:default}
+.cbar::after{content:attr(title);position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--mut);white-space:nowrap;opacity:0;transition:opacity .2s}
+.cbar:hover::after{opacity:1}
+.wk-keys{display:flex;flex-wrap:wrap;gap:8px}
+.wk-key{background:rgba(214,48,49,.1);color:var(--err);border:2px solid rgba(214,48,49,.2);border-radius:8px;padding:5px 12px;font-weight:700}
+.les-tbl{width:100%;border-collapse:collapse;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);font-size:.85rem}
+.les-tbl th{background:var(--pri);color:#fff;padding:9px 12px;text-align:left}
+.les-tbl td{padding:9px 12px;border-bottom:1px solid var(--bdr)}
+.les-tbl tr:last-child td{border-bottom:none}
+
+/* CERTIFICATE */
+.cert-wrap{max-width:680px;margin:20px auto;padding:0 20px}
+.certificate{background:var(--card);border-radius:20px;padding:36px;box-shadow:var(--sh);border:4px solid var(--gold);text-align:center;position:relative}
+.cert-in{position:absolute;inset:8px;border:2px dashed rgba(249,202,36,.4);border-radius:14px;pointer-events:none}
+.cert-em{font-size:4rem;margin-bottom:6px}
+.cert-ttl{font-size:1.9rem;font-weight:900;color:var(--pri)}
+.cert-sub{color:var(--mut);margin-bottom:16px}
+.cert-name{font-size:2.4rem;font-weight:900;font-style:italic;margin:12px 0}
+.cert-txt{color:var(--mut);line-height:1.8;margin-bottom:16px}
+.cert-sts{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.cst .cv{font-size:1.4rem;font-weight:900;color:var(--pri)}
+.cst .cl{font-size:.75rem;color:var(--mut)}
+.cert-pip{font-size:2rem;margin:6px 0}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .keyboard{transform:scale(.62);transform-origin:center top;margin-bottom:-55px}
+  .prac-text{font-size:1.4rem;padding:12px 16px}
+  .wlc-title{font-size:2.2rem}
+  .lnode{width:70px}
+  .lnode-c{width:48px;height:48px;font-size:1.2rem}
+}
+@media print{
+  .btn,.sh,.no-print{display:none!important}
+  body{background:#fff}
+  .certificate{box-shadow:none;border:2px solid var(--gold)}
+}
+
+/* ACCESSIBILITY */
+body.dyslexic,body.dyslexic *{font-family:'Comic Sans MS','OpenDyslexic',Arial,sans-serif!important;letter-spacing:.04em;word-spacing:.08em;line-height:1.8}
+body.fnt-lg{--sz:21px}
+body.fnt-xl{--sz:25px}
+body.hi-con{--bg:#000;--card:#111;--txt:#fff;--mut:#ccc;--bdr:#444;--pri:#a29bfe;--ok:#55efc4;--err:#ff7675}
+body.colorblind .ch.ok{text-decoration:underline}
+body.colorblind .ch.bad{text-decoration:line-through}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="s-welcome" class="screen active">
+<div class="wlc-wrap">
+  <div class="wlc-icon">🏰</div>
+  <div class="wlc-title">TypeRidder</div>
+  <div class="wlc-sub">Leer blind typen — Beleef het avontuur!</div>
+  <div class="pip-bubble">
+    <div class="pip-big">🐧</div>
+    <div>Hallo! Ik ben <strong>Pip de Pinguïn</strong>! Ik leer je het geheim van het toetsenbord. Ben jij klaar voor een magisch avontuur, jonge TypeRidder?</div>
+  </div>
+  <button class="btn btn-gold btn-big" onclick="App.go('profiles')">Begin het Avontuur ⚔️</button>
+</div>
+</div>
+
+<!-- PROFILES -->
+<div id="s-profiles" class="screen">
+<div class="sh"><button class="btn-icon" onclick="App.go('welcome')">🏠</button><span class="sh-title">Kies jouw ridder</span><button class="btn-icon" onclick="App.go('settings')">⚙️</button></div>
+<div class="profiles-grid" id="profiles-grid"></div>
+<div class="profiles-footer"><button class="btn btn-sec btn-sm" onclick="App.go('dashboard')">📊 Ouderportaal</button></div>
+</div>
+
+<!-- CREATE PROFILE -->
+<div id="s-create-profile" class="screen">
+<div class="sh"><button class="btn-icon" onclick="App.go('profiles')">←</button><span class="sh-title">Nieuwe Ridder</span></div>
+<div class="cform">
+  <div class="fg"><label for="pname">Jouw naam</label><input type="text" id="pname" placeholder="bv. Finn of Emma" maxlength="20" autocomplete="off"></div>
+  <div class="fg"><label>Kies een avatar</label>
+    <div class="av-grid">
+      <span class="av-opt sel" data-av="🧙" onclick="Profiles.selAv(this)">🧙</span>
+      <span class="av-opt" data-av="🧝" onclick="Profiles.selAv(this)">🧝</span>
+      <span class="av-opt" data-av="🦸" onclick="Profiles.selAv(this)">🦸</span>
+      <span class="av-opt" data-av="🦊" onclick="Profiles.selAv(this)">🦊</span>
+      <span class="av-opt" data-av="🐉" onclick="Profiles.selAv(this)">🐉</span>
+      <span class="av-opt" data-av="🤖" onclick="Profiles.selAv(this)">🤖</span>
+      <span class="av-opt" data-av="🐧" onclick="Profiles.selAv(this)">🐧</span>
+      <span class="av-opt" data-av="⭐" onclick="Profiles.selAv(this)">⭐</span>
+    </div>
+  </div>
+  <div class="fg"><label>Toetsenbordindeling</label>
+    <div class="lay-opts">
+      <div class="lay-opt sel" data-lay="qwerty" onclick="Profiles.selLay(this)"><div class="lay-name">QWERTY</div><div class="lay-desc">Internationaal / Engels</div></div>
+      <div class="lay-opt" data-lay="azerty" onclick="Profiles.selLay(this)"><div class="lay-name">AZERTY</div><div class="lay-desc">Belgisch / Frans</div></div>
+    </div>
+  </div>
+  <button class="btn btn-pri" onclick="Profiles.create()">Klaar! Start het avontuur 🏰</button>
+</div>
+</div>
+
+<!-- WORLD MAP -->
+<div id="s-worldmap" class="screen">
+<div class="wm-hdr">
+  <div class="wm-av" id="wm-av">🧙</div>
+  <div class="wm-info" style="flex:1">
+    <div class="wm-name" id="wm-name">Ridder</div>
+    <div class="wm-lv-title" id="wm-lv-title">Leerling Ridder</div>
+    <div class="xp-bar" style="margin-top:5px"><div class="xp-fill" id="wm-xp" style="width:0%"></div></div>
+    <div class="wm-xp-info" id="wm-xp-info">0 XP</div>
+  </div>
+  <div class="wm-lv"><strong id="wm-lv">1</strong><span>Level</span></div>
+  <button class="btn-icon" onclick="App.go('settings')" title="Instellingen">⚙️</button>
+</div>
+<div class="worlds-wrap" id="worlds-wrap"></div>
+</div>
+
+<!-- LESSON INTRO -->
+<div id="s-lesson-intro" class="screen">
+<div class="sh"><button class="btn-icon" onclick="App.go('worldmap')">←</button><span class="sh-title" id="intro-ttl">Les 1</span></div>
+<div class="intro-body">
+  <div class="intro-story"><div class="pip-md">🐧</div><div class="story-bub" id="intro-story"></div></div>
+  <div><div class="nk-lbl">🆕 Nieuwe toetsen vandaag</div><div class="nk-list" id="intro-nk"></div></div>
+  <div class="fhint" id="intro-fhint"></div>
+  <div class="etip">💡 <strong>Houding:</strong> Rug recht, voeten plat, scherm op ooghoogte. Handen ontspannen op het toetsenbord. Na 20 minuten even pauze!</div>
+  <button class="btn btn-gold btn-big" style="align-self:center" onclick="Lesson.startEx(0)">🚀 Start de les!</button>
+</div>
+</div>
+
+<!-- PRACTICE -->
+<div id="s-practice" class="screen">
+<div class="prac-hdr">
+  <button class="btn-icon" onclick="if(confirm('Les stoppen en terug naar de kaart?'))App.go('worldmap')" title="Stop">✕</button>
+  <div class="prac-ttl" id="prac-ttl">Les 1</div>
+  <div class="prac-enum" id="prac-en">1/3</div>
+</div>
+<div class="stats-bar">
+  <div class="sitem">⏱️ <span class="sval" id="st-t">0:00</span></div>
+  <div class="sitem">🎯 <span class="sval" id="st-a">–</span></div>
+  <div class="sitem">💨 <span class="sval" id="st-w">0</span> <span style="color:var(--mut);font-size:.8rem">WPM</span></div>
+</div>
+<div class="pip-bar"><span class="pip-s">🐧</span><span class="pip-htxt" id="pip-ht">Typ de letters die je ziet! Focus op nauwkeurigheid.</span></div>
+<div class="prac-area"><div class="prac-text" id="prac-text" aria-live="assertive" role="textbox" aria-readonly="true"></div></div>
+<div class="kb-wrap" id="kb-wrap"><div id="kb-cont"></div></div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+<div class="res-wrap">
+  <div class="res-pip" id="res-pip">🐧</div>
+  <div class="res-title" id="res-ttl">Geweldig!</div>
+  <div class="res-msg" id="res-msg"></div>
+  <div class="res-stars"><span class="rstar" id="rs1">⭐</span><span class="rstar" id="rs2">⭐</span><span class="rstar" id="rs3">⭐</span></div>
+  <div class="res-stats">
+    <div class="rstat"><div class="rv" id="rv-w">0</div><div class="rl">WPM</div></div>
+    <div class="rstat"><div class="rv" id="rv-a">0%</div><div class="rl">Nauwkeurig</div></div>
+    <div class="rstat"><div class="rv" id="rv-t">0s</div><div class="rl">Tijd</div></div>
+  </div>
+  <div class="res-xp" id="res-xp">+50 XP</div>
+  <div class="res-badges" id="res-badges"></div>
+  <div class="res-btns">
+    <button class="btn btn-sec btn-sm" onclick="Lesson.retry()">🔄 Opnieuw</button>
+    <button class="btn btn-sec btn-sm" id="res-game" onclick="App.go('game')">🎮 Mini-Game</button>
+    <button class="btn btn-gold" id="res-next" onclick="Lesson.goNext()">Volgende ➡️</button>
+  </div>
+</div>
+</div>
+
+<!-- MINI-GAME -->
+<div id="s-game" class="screen">
+<div class="game-hdr">
+  <button class="btn-icon" style="color:#fff;filter:invert(1)" onclick="Game.stop();App.go('worldmap')">✕</button>
+  <div class="game-ttl">🎮 Vallende Letters</div>
+  <div class="game-st">⏰ <span id="g-t">45</span>s</div>
+  <div class="game-st">⭐ <span id="g-s">0</span></div>
+</div>
+<div class="game-area" id="g-area"></div>
+<div class="game-foot">Typ de letters voor ze de bodem raken!</div>
+<div class="game-end" id="g-end">
+  <div style="font-size:3.5rem">🎉</div>
+  <div style="font-size:1.5rem;font-weight:700;color:#fff">Game Over!</div>
+  <div style="color:#ddd">Score: <strong id="g-fin">0</strong> letters gevangen</div>
+  <div style="color:var(--gold);font-weight:700">+<span id="g-xpb">0</span> bonus XP!</div>
+  <button class="btn btn-gold" onclick="App.go('worldmap')">Terug naar kaart 🗺️</button>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="s-settings" class="screen">
+<div class="sh"><button class="btn-icon" onclick="App.goBack()">←</button><span class="sh-title">⚙️ Instellingen</span></div>
+<div class="set-body">
+  <div class="set-card"><h3>Toegankelijkheid</h3>
+    <div class="set-row"><div><div class="set-lbl">Dyslexievriendelijk lettertype</div><div class="set-dsc">Gebruikt Comic Sans MS</div></div><label class="toggle"><input type="checkbox" id="s-dys" onchange="Settings.save()"><span class="tslider"></span></label></div>
+    <div class="set-row"><div><div class="set-lbl">Hoog contrast</div><div class="set-dsc">Donkere modus</div></div><label class="toggle"><input type="checkbox" id="s-hc" onchange="Settings.save()"><span class="tslider"></span></label></div>
+    <div class="set-row"><div><div class="set-lbl">Kleurenblindmodus</div><div class="set-dsc">Onderstreping i.p.v. alleen kleur</div></div><label class="toggle"><input type="checkbox" id="s-cb" onchange="Settings.save()"><span class="tslider"></span></label></div>
+    <div class="set-row"><div><div class="set-lbl">Lettergrootte</div></div><select class="sel-ctrl" id="s-fs" onchange="Settings.save()"><option value="">Normaal</option><option value="fnt-lg">Groot</option><option value="fnt-xl">Extra groot</option></select></div>
+    <div class="set-row"><div><div class="set-lbl">Geluidseffecten</div><div class="set-dsc">Klik, fout, sterren en fanfare</div></div><label class="toggle"><input type="checkbox" id="s-snd" checked onchange="Settings.save()"><span class="tslider"></span></label></div>
+  </div>
+  <div class="set-card"><h3>Toetsenbord</h3>
+    <div class="set-row"><div><div class="set-lbl">Indeling</div></div><select class="sel-ctrl" id="s-lay" onchange="Settings.saveLayout()"><option value="qwerty">QWERTY</option><option value="azerty">AZERTY</option></select></div>
+    <div class="set-row"><div><div class="set-lbl">Toon virtueel toetsenbord</div></div><label class="toggle"><input type="checkbox" id="s-kb" checked onchange="Settings.save()"><span class="tslider"></span></label></div>
+  </div>
+  <div class="set-card"><h3>Profielen</h3><div id="set-profiles"></div></div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dashboard" class="screen">
+<div class="sh no-print"><button class="btn-icon" onclick="App.goBack()">←</button><span class="sh-title">📊 Ouderportaal</span></div>
+<div class="dash-body">
+  <div id="dash-psel" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  <div class="dash-stats" id="dash-stats"></div>
+  <div class="dsec"><h3>📈 WPM-verloop (laatste lessen)</h3><div class="wpm-chart"><div class="chart-bars" id="wpm-bars"></div></div></div>
+  <div class="dsec"><h3>🔴 Moeilijkste toetsen</h3><div class="wk-keys" id="wk-keys"></div></div>
+  <div class="dsec"><h3>📋 Lesoverzicht</h3><div id="les-tbl"></div></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap" class="no-print">
+    <button class="btn btn-sec btn-sm" onclick="Dashboard.exportCSV()">⬇️ Export CSV</button>
+    <button class="btn btn-sec btn-sm" onclick="App.go('certificate')">🎓 Diploma bekijken</button>
+  </div>
+</div>
+</div>
+
+<!-- CERTIFICATE -->
+<div id="s-certificate" class="screen">
+<div class="sh no-print"><button class="btn-icon" onclick="App.go('dashboard')">←</button><span class="sh-title">🎓 Typediploma</span><button class="btn btn-pri btn-sm" onclick="window.print()">🖨️ Afdrukken</button></div>
+<div class="cert-wrap">
+<div class="certificate">
+  <div class="cert-in"></div>
+  <div class="cert-em">🏰</div>
+  <div class="cert-ttl">TypeRidder Diploma</div>
+  <div class="cert-sub">Koninkrijk der Klinkende Toetsen</div>
+  <p style="color:var(--mut);margin:10px 0">Hierbij verklaren wij plechtig dat</p>
+  <div class="cert-name" id="cert-name">Ridder</div>
+  <div class="cert-txt">alle <strong>lessen</strong> van de TypeRidder cursus met succes heeft voltooid<br>en het geheim van het toetsenbord volledig beheerst.</div>
+  <div class="cert-sts" id="cert-sts"></div>
+  <div class="cert-pip">🐧</div>
+  <div style="color:var(--mut);font-style:italic">Pip de Pinguïn — Grootmeester der Toetsen</div>
+  <div style="color:var(--lgt);font-size:.8rem;margin-top:8px" id="cert-date"></div>
+</div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+
+// Keyboard layouts: each key = [char, label, finger-class, width-class, isHome]
+const KB = {
+  qwerty:[
+    [[' `','`','f-lp'],['1','1','f-lp'],['2','2','f-lr'],['3','3','f-lm'],['4','4','f-li'],['5','5','f-li'],['6','6','f-ri'],['7','7','f-ri'],['8','8','f-rm'],['9','9','f-rr'],['0','0','f-rp'],['-','-','f-rp'],['=','=','f-rp'],['BS','←','f-rp','w15']],
+    [['TAB','Tab','f-lp','w15'],['q','Q','f-lp'],['w','W','f-lr'],['e','E','f-lm'],['r','R','f-li'],['t','T','f-li'],['y','Y','f-ri'],['u','U','f-ri'],['i','I','f-rm'],['o','O','f-rr'],['p','P','f-rp'],['[','[','f-rp'],[']',']','f-rp'],['\\','\\','f-rp','w15']],
+    [['CAP','Caps','f-lp','w17'],['a','A','f-lp'],['s','S','f-lr'],['d','D','f-lm'],['f','F','f-li','','hk'],['g','G','f-li'],['h','H','f-ri'],['j','J','f-ri','','hk'],['k','K','f-rm'],['l','L','f-rr'],[';',';','f-rp'],["'","'","f-rp"],['ENT','Enter','f-rp','w22']],
+    [['LSH','Shift','f-lp','w22'],['z','Z','f-lp'],['x','X','f-lr'],['c','C','f-lm'],['v','V','f-li'],['b','B','f-li'],['n','N','f-ri'],['m','M','f-ri'],[',',',','f-rm'],['.','.','f-rr'],['/','/ ','f-rp'],['RSH','Shift','f-rp','w27']],
+    [[' ','Spatie','f-th','w10']]
+  ],
+  azerty:[
+    [['²','²','f-lp'],['&','&','f-lp'],['é','é','f-lr'],['"','"','f-lm'],["'","'","f-li"],['(','(','f-li'],['-','-','f-ri'],['è','è','f-ri'],['_','_','f-rm'],['ç','ç','f-rr'],['à','à','f-rp'],[')',')','f-rp'],['=','=','f-rp'],['BS','←','f-rp','w15']],
+    [['TAB','Tab','f-lp','w15'],['a','A','f-lp'],['z','Z','f-lr'],['e','E','f-lm'],['r','R','f-li'],['t','T','f-li'],['y','Y','f-ri'],['u','U','f-ri'],['i','I','f-rm'],['o','O','f-rr'],['p','P','f-rp'],['^','^','f-rp'],['$','$','f-rp'],['ENT','Enter','f-rp','w15']],
+    [['CAP','Caps','f-lp','w17'],['q','Q','f-lp'],['s','S','f-lr'],['d','D','f-lm'],['f','F','f-li','','hk'],['g','G','f-li'],['h','H','f-ri'],['j','J','f-ri','','hk'],['k','K','f-rm'],['l','L','f-rr'],['m','M','f-rp'],['ù','ù','f-rp'],['*','*','f-rp'],['ENT','↵','f-rp','w22']],
+    [['LSH','Shift','f-lp','w2'],['<','<','f-lp'],['w','W','f-lr'],['x','X','f-lm'],['c','C','f-li'],['v','V','f-li'],['b','B','f-li'],['n','N','f-ri'],[',',',','f-rm'],[';',';','f-rr'],[':',':','f-rp'],['!','!','f-rp'],['RSH','Shift','f-rp','w22']],
+    [[' ','Spatie','f-th','w10']]
+  ]
+};
+
+// Worlds
+const WORLDS=[
+  {id:1,name:'Startdorp',emoji:'🏠',color:'linear-gradient(135deg,#6C5CE7,#a29bfe)',lessons:[1,2,3,4,5]},
+  {id:2,name:'Het Woud',emoji:'🌲',color:'linear-gradient(135deg,#00b894,#55efc4)',lessons:[6,7,8,9,10]},
+  {id:3,name:'De Bergen',emoji:'⛰️',color:'linear-gradient(135deg,#e17055,#fdcb6e)',lessons:[11,12,13,14,15]},
+  {id:4,name:'Het Kasteel',emoji:'🏰',color:'linear-gradient(135deg,#6C5CE7,#fd79a8)',lessons:[16,17,18,19,20]}
+];
+
+// Lessons
+const LESSONS=[
+  {id:1,title:'De Ankertoetsen',emoji:'⚓',
+   story:'Welkom, jonge TypeRidder! Voel de kleine nopjes op de F en J toetsen — dat zijn jouw ankerpunten! Elke keer als je handen teruggaan naar het toetsenbord, zoek je eerst deze nopjes.',
+   pip:'Linker wijsvinger op F, rechter wijsvinger op J. Voel de nopjes?',
+   newKeys:{qwerty:['F','J'],azerty:['F','J']},
+   fhint:'👈 Linker wijsvinger → F &nbsp;&nbsp; J ← Rechter wijsvinger 👉',
+   ex:{qwerty:['fff jjj fff jjj fff','fj fj fj jf jf jf fj','fjf jfj ffjj jjff fjfj jfjf'],
+       azerty:['fff jjj fff jjj fff','fj fj fj jf jf jf fj','fjf jfj ffjj jjff fjfj jfjf']},
+   xp:50},
+  {id:2,title:'Middelvinger aan het werk',emoji:'🖐️',
+   story:'Goed gedaan! Je middelvingers gaan nu ook werken. Links drukt D in, rechts drukt K in. Houd je andere vingers rustig op F en J.',
+   pip:'Beweeg alleen je middelvinger. De rest blijft op de thuisrij!',
+   newKeys:{qwerty:['D','K'],azerty:['D','K']},
+   fhint:'👈 Linker middelvinger → D &nbsp;&nbsp; K ← Rechter middelvinger 👉',
+   ex:{qwerty:['ddd kkk ddd kkk','dk kd dk kd fd jk','fdk jkd dkf kdj fdkj'],
+       azerty:['ddd kkk ddd kkk','dk kd dk kd fd jk','fdk jkd dkf kdj fdkj']},
+   xp:50},
+  {id:3,title:'Ringvingers links en rechts',emoji:'💍',
+   story:'Je ringvingers zijn nu aan de beurt. S voor je linker ringvinger, L voor je rechter ringvinger. Kleine, precieze bewegingen!',
+   pip:'Linker ringvinger op S, rechter ringvinger op L. Rustig en accuraat!',
+   newKeys:{qwerty:['S','L'],azerty:['S','L']},
+   fhint:'👈 Linker ringvinger → S &nbsp;&nbsp; L ← Rechter ringvinger 👉',
+   ex:{qwerty:['sss lll sss lll','sl ls sl ls sdf jkl','sdfk jkls fds jkl sdfjkl'],
+       azerty:['sss lll sss lll','sl ls sl ls sdf jkl','sdfk jkls fds jkl sdfjkl']},
+   xp:50},
+  {id:4,title:'De Pinken zijn ook sterk!',emoji:'🤙',
+   story:'De pink is je sterkste vinger! Op QWERTY is A de linker pink. Op AZERTY is Q de linker pink en M de rechter pink. Strek ze uit naar de rand van de thuisrij!',
+   pip:'Strek je pink uit! QWERTY: A. AZERTY: Q en M.',
+   newKeys:{qwerty:['A'],azerty:['Q','M']},
+   fhint:'QWERTY: 👈 Pink → A | AZERTY: Pink → Q en M ← Pink 👉',
+   ex:{qwerty:['aaa af as ad aj al','als dal laf aas jas','sla als das sad gaf'],
+       azerty:['qqq mmm qmq mqm','qd qf qs ql mj mk ml','qsdf mkl qfm djkm']},
+   xp:60},
+  {id:5,title:'Thuisrij Meester! 🏆',emoji:'🏠',
+   story:'De thuisrij is nu compleet! Nu voegen we G en H toe — de twee binnenste toetsen in het midden. Daarna ken je de volledige thuisrij!',
+   pip:'G met linker wijsvinger (iets naar rechts), H met rechter wijsvinger. Klaar voor echte woorden!',
+   newKeys:{qwerty:['G','H'],azerty:['G','H']},
+   fhint:'Linker wijsvinger → G &nbsp;&nbsp; H ← Rechter wijsvinger',
+   ex:{qwerty:['dag had gaf jas sla als','klas glas glad half hals','hak gas dal slag dak las'],
+       azerty:['ghf ghj ghk ghm fghj','sghk dghm qghf ghqm','jklm ghsdf qfghj mkgh']},
+   xp:75,badge:'home-row-master'},
+  {id:6,title:'Omhoog: E en I',emoji:'🌲',
+   story:'Je betreedt het Woud der Bovenrij! Je middelvingers gaan nu iets omhoog. Links naar E, rechts naar I. Houd je andere vingers op de thuisrij.',
+   pip:'Kleine beweging omhoog met je middelvinger. Dan snel terug!',
+   newKeys:{qwerty:['E','I'],azerty:['E','I']},
+   fhint:'E ← Linker middelvinger &nbsp;&nbsp; Rechter middelvinger → I',
+   ex:{qwerty:['eee iii eie iei','die eis ijs kies lies','lied hiel gids kiel kids'],
+       azerty:['eee iii eie iei','die eis ijs kies gids','lied hiel kiel mied lied']},
+   xp:75},
+  {id:7,title:'Omhoog: R en U',emoji:'🌿',
+   story:'Je wijsvingers gaan nu ook omhoog! Links naar R, rechts naar U. Iets verder weg dan F en J, maar dezelfde vingers!',
+   pip:'Wijsvinger omhoog! Links = R, rechts = U. Houd de rust!',
+   newKeys:{qwerty:['R','U'],azerty:['R','U']},
+   fhint:'R ← Linker wijsvinger &nbsp;&nbsp; Rechter wijsvinger → U',
+   ex:{qwerty:['rr uu rur uru rru','deur keur geur ruis ruig','kers uur dure fruit rijk'],
+       azerty:['rr uu rur uru rru','deur keur geur ruis ruig','kers uur dure ruig rijk']},
+   xp:75},
+  {id:8,title:'Omhoog: T en Y',emoji:'🍃',
+   story:'T en Y zitten naast R en U — dezelfde wijsvingers, iets verder naar het midden toe. Durf te reiken!',
+   pip:'T en Y zijn ietsje meer naar het midden. Dezelfde wijsvingers, kleine extra rek!',
+   newKeys:{qwerty:['T','Y'],azerty:['T','Y']},
+   fhint:'T ← Linker wijsvinger &nbsp;&nbsp; Rechter wijsvinger → Y',
+   ex:{qwerty:['ttt yyy tyt yty tty','tril guit huid rij traf','rijk kijk grijs dier fruit'],
+       azerty:['ttt yyy tyt yty tty','tril guit huid rij traf','rijk kijk grijs dier fruit']},
+   xp:75},
+  {id:9,title:'Ringvinger naar boven',emoji:'💫',
+   story:'Je ringvingers gaan nu ook omhoog! QWERTY: W (links) en O (rechts). AZERTY: Z (links) en O (rechts).',
+   pip:'Ringvinger omhoog! Kleine, voorzichtige beweging.',
+   newKeys:{qwerty:['W','O'],azerty:['Z','O']},
+   fhint:'QWERTY: W + O &nbsp;|&nbsp; AZERTY: Z + O (ringvingers omhoog!)',
+   ex:{qwerty:['oud goud rood doos groot','stoel water woord sport hotel','groei woord soort troost'],
+       azerty:['oud goud rood groot doos','ziel zeker oor soort uur','deur stoel troost groot']},
+   xp:80},
+  {id:10,title:'Bovenrij Meester!',emoji:'🏆',
+   story:'De laatste bovenrij-toetsen! QWERTY: Q en P. AZERTY: A en P. De pinks gaan naar boven. Na deze les ken je alle letters bovenaan!',
+   pip:'Pink naar boven! Durf te reiken. Het is een kleine beweging.',
+   newKeys:{qwerty:['Q','P'],azerty:['A','P']},
+   fhint:'QWERTY: Q + P (pinken) | AZERTY: A + P (pinken naar boven)',
+   ex:{qwerty:['op top spel sport spoor','spek spijt held poster','rapport project paard top'],
+       azerty:['dag had gaf jas oud goud','op top sport spoor apart','papa rapport paard dag']},
+   xp:100,badge:'top-row-master'},
+  {id:11,title:'Omlaag: V en M (of N)',emoji:'⛰️',
+   story:'De Bergwereld! Je wijsvingers dalen nu af naar de onderrij. QWERTY: V (links) en M (rechts). AZERTY: V (links) en N (rechts).',
+   pip:'Wijs naar beneden! V links, M of N rechts. Dan snel terug naar boven!',
+   newKeys:{qwerty:['V','M'],azerty:['V','N']},
+   fhint:'QWERTY: V + M | AZERTY: V + N (wijsvingers omlaag)',
+   ex:{qwerty:['vijf vlam maar meer vol','vier voet voor museum mier','vlam vijf voet meer vier'],
+       azerty:['van naar voor meer vier','nier nee een en voor voet','vier nee van meer voor']},
+   xp:80},
+  {id:12,title:'Omlaag: C en komma',emoji:'🗻',
+   story:'De middelvinger gaat naar beneden voor C, en je rechter middelvinger drukt de komma in. De komma gebruik je elke dag in zinnen!',
+   pip:'C met linker middelvinger, komma met rechter middelvinger.',
+   newKeys:{qwerty:['C',','],azerty:['C',',']},
+   fhint:'C ← Linker middelvinger &nbsp;&nbsp; Rechter middelvinger → komma',
+   ex:{qwerty:['cool cider cirkel','ik kom, jij gaat, wij spelen','sport, water, goud, vier ridders'],
+       azerty:['cool cider cirkel','ik kom, jij gaat, wij spelen','sport, water, goud, vier ridders']},
+   xp:80},
+  {id:13,title:'Omlaag: X en punt',emoji:'🌄',
+   story:'Ringvingers omlaag nu! X voor je linker ringvinger, punt voor rechts (QWERTY) of puntkomma (AZERTY). De punt eindigt elke zin!',
+   pip:'X links, punt rechts. Klein maar belangrijk!',
+   newKeys:{qwerty:['X','.'],azerty:['X',';']},
+   fhint:'QWERTY: X + punt | AZERTY: X + puntkomma (ringvingers omlaag)',
+   ex:{qwerty:['extra exact. water. goud.','ik eet. jij slaapt. goed.','sport. goud. vier. rijk. top.'],
+       azerty:['extra exact; water; goud;','ik eet; jij slaapt; goed;','sport; goud; vier; rijk;']},
+   xp:80},
+  {id:14,title:'Pink omlaag',emoji:'🏔️',
+   story:'De pink gaat nu ook naar de onderrij! QWERTY: Z voor linker pink. AZERTY: W voor de linker ringvinger. Kleine beweging naar beneden!',
+   pip:'QWERTY: Z met linker pink. AZERTY: W met linker ringvinger.',
+   newKeys:{qwerty:['Z'],azerty:['W']},
+   fhint:'QWERTY: Z (pink) | AZERTY: W (ringvinger omlaag)',
+   ex:{qwerty:['ziek zout zorg zoo quiz','pizza jazz fez extra zak','zelf ziek zoek zout zon'],
+       azerty:['water wereld weg warm wit','wonder woud waken wal wet','warm water woud wereld']},
+   xp:80},
+  {id:15,title:'Onderrij Meester!',emoji:'🎖️',
+   story:'De laatste onderrij-toetsen: B en N voor QWERTY, B en M voor AZERTY. Dan is de volledige onderrij compleet!',
+   pip:'B met linker wijsvinger (iets meer naar links), N of M met rechter wijsvinger.',
+   newKeys:{qwerty:['B','N'],azerty:['B','M']},
+   fhint:'QWERTY: B + N | AZERTY: B + M (wijsvingers onderrij)',
+   ex:{qwerty:['beer beker boom bank brief','nacht neus niveau noot nier','boven nacht boom brief nier'],
+       azerty:['beer beker boom bank brief','mier meer maar mooi muur','boven boom brief mier meer']},
+   xp:100,badge:'bottom-row-master'},
+  {id:16,title:'Grote Letters met Shift',emoji:'🏰',
+   story:'Welkom in het Kasteel! Nu leer je hoofdletters typen. Rechter Shift voor letters links van het midden, linker Shift voor letters rechts. Altijd de andere hand!',
+   pip:'Houd Shift ingedrukt, typ de letter, laat Shift los. Tegengestelde hand!',
+   newKeys:{qwerty:['Shift'],azerty:['Shift']},
+   fhint:'Rechter Shift ← links | rechts → Linker Shift',
+   ex:{qwerty:['Dag Hallo Fijn Klas Goed','Super Bravo Dapper Sterk Kind','De Kat Zit Op De Mat'],
+       azerty:['Dag Hallo Fijn Klas Goed','Super Bravo Dapper Sterk Kind','De Kat Zit Op De Mat']},
+   xp:100},
+  {id:17,title:'Woorden en Zinnen',emoji:'📖',
+   story:'Nu schrijven we echte Nederlandse zinnen met alle letters samen. Focus op nauwkeurigheid, niet op snelheid. Jij bent bijna een echte TypeRidder!',
+   pip:'Alle vingers werken samen als een team. Rustig en accuraat!',
+   newKeys:{qwerty:[],azerty:[]},
+   fhint:'Alle vingers samen — jij kan dit!',
+   ex:{qwerty:['Ik kan typen met alle vingers.','De zon schijnt fel en warm vandaag.','Pip de pinguin is een trouwe vriend.'],
+       azerty:['Ik kan typen met alle vingers.','De zon schijnt fel en warm vandaag.','Pip de pinguin is een trouwe vriend.']},
+   xp:100},
+  {id:18,title:'Cijfers 1 tot 5',emoji:'🔢',
+   story:'Bijna een TypeKampioen! Nu leer je de cijfers. Ze staan bovenaan het toetsenbord, op de cijferrij.',
+   pip:'Pinken en wijsvingers strekken naar boven voor de cijfers!',
+   newKeys:{qwerty:['1','2','3','4','5'],azerty:['1','2','3','4','5']},
+   fhint:'1=pink | 2=ringvinger | 3=middelvinger | 4-5=wijsvinger',
+   ex:{qwerty:['1 2 3 4 5 12 34 51','123 234 345 451 512','ik ben 8 jaar en typ 5 woorden'],
+       azerty:['1 2 3 4 5 12 34 51','123 234 345 451 512','ik ben 8 jaar en typ 5 woorden']},
+   xp:80},
+  {id:19,title:'Cijfers 6 tot 0',emoji:'💯',
+   story:'De rechterhelft van de cijferrij! 6-0 worden getypt met je rechterhand. Na deze les ken je alle tien cijfers!',
+   pip:'6-0 met rechterhand. 6-7 wijsvinger, 8 middelvinger, 9 ringvinger, 0 pink!',
+   newKeys:{qwerty:['6','7','8','9','0'],azerty:['6','7','8','9','0']},
+   fhint:'6-7=wijsvinger | 8=middelvinger | 9=ringvinger | 0=pink (rechts)',
+   ex:{qwerty:['6 7 8 9 0 67 89 70','678 789 890 670 780','ik tel 10 ridders en 8 kastelen'],
+       azerty:['6 7 8 9 0 67 89 70','678 789 890 670 780','ik tel 10 ridders en 8 kastelen']},
+   xp:80},
+  {id:20,title:'Het Grote Eindexamen',emoji:'🎓',
+   story:'Dit is het moment waar je al die tijd voor hebt geoefend! Het grote eindexamen van het Koninkrijk der Klinkende Toetsen. Typ rustig, accuraat en met trots, TypeRidder!',
+   pip:'Je hebt alles geleerd. Typ met vertrouwen. Ik ben trots op jou!',
+   newKeys:{qwerty:[],azerty:[]},
+   fhint:'Alle vingers, alle toetsen — jij bent klaar voor dit!',
+   ex:{qwerty:['De TypeRidder beheerst het toetsenbord.','Met 10 vingers typ ik snel en accuraat.','Pip de pinguin is heel erg trots op mij!'],
+       azerty:['De TypeRidder beheerst het toetsenbord.','Met 10 vingers typ ik snel en accuraat.','Pip de pinguin is heel erg trots op mij!']},
+   xp:150,badge:'type-champion'}
+];
+
+const BADGES={
+  'home-row-master':{emoji:'🏠',label:'Thuisrij Meester'},
+  'top-row-master':{emoji:'🌲',label:'Bovenrij Held'},
+  'bottom-row-master':{emoji:'⛰️',label:'Bergbedwinger'},
+  'type-champion':{emoji:'🏆',label:'TypeKampioen'},
+  'first-lesson':{emoji:'🏅',label:'Eerste Stap'},
+  'three-stars':{emoji:'⭐',label:'Drie Sterren'},
+  'speed-demon':{emoji:'⚡',label:'Snelheidsduivel'},
+  'perfect':{emoji:'🎯',label:'Scherpschutter'},
+  'streak-5':{emoji:'🔥',label:'Op Stoom (5 op rij)'}
+};
+
+const LEVELS=[
+  {xp:0,title:'Leerling Ridder'},{xp:100,title:'Schildknaap'},{xp:250,title:'Jonge Ridder'},
+  {xp:500,title:'Ridder'},{xp:800,title:'Ster Ridder'},{xp:1200,title:'Held'},
+  {xp:1700,title:'Meester Ridder'},{xp:2300,title:'Grootmeester'},{xp:3000,title:'Legende'},{xp:4000,title:'TypeKampioen'}
+];
+
+// ═══════════════════════════════════════════════════════
+//  STORAGE & STATE
+// ═══════════════════════════════════════════════════════
+const Store={
+  KEY:'typeridder_v1',
+  load(){try{return JSON.parse(localStorage.getItem(this.KEY)||'null')||{profiles:[],settings:{}}}catch(e){return{profiles:[],settings:{}}}},
+  save(d){try{localStorage.setItem(this.KEY,JSON.stringify(d))}catch(e){}}
+};
+
+let D=Store.load(); // {profiles:[], settings:{}}
+let AP=null; // active profile
+
+// ═══════════════════════════════════════════════════════
+//  SOUND ENGINE  (Web Audio API — geen externe bestanden)
+// ═══════════════════════════════════════════════════════
+const Sound={
+  _ctx:null,
+  get enabled(){return D.settings?.sound!==false},
+  _init(){
+    if(!this._ctx)try{this._ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}
+    if(this._ctx?.state==='suspended')this._ctx.resume();
+    return this._ctx;
+  },
+  _tone(freq,type,dur,vol=0.25,delay=0){
+    const ctx=this._init();if(!ctx||!this.enabled)return;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type;o.frequency.value=freq;
+    const t=ctx.currentTime+delay;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.start(t);o.stop(t+dur+0.05);
+  },
+  // Zacht klik bij correcte aanslag
+  ok(){this._tone(900,'sine',0.07,0.12)},
+  // Brom bij fout
+  bad(){this._tone(160,'sawtooth',0.14,0.09);this._tone(120,'square',0.14,0.05)},
+  // Oplichtende toonreeks bij oefening voltooid
+  exDone(){[523,659,784].forEach((f,i)=>this._tone(f,'sine',0.22,0.18,i*0.11))},
+  // Ster-ding (1, 2 of 3 sterren)
+  star(n){const f=[523,784,1047][n]||1047;this._tone(f,'sine',0.35,0.22)},
+  // Fanfare bij badge
+  badge(){[523,659,784,1047,1319].forEach((f,i)=>this._tone(f,'sine',0.28,0.18,i*0.1))},
+  // Vang-geluid in mini-game
+  catch(){this._tone(1400,'sine',0.09,0.18);this._tone(1800,'sine',0.07,0.06,0.06)},
+  // Mis-geluid in mini-game
+  miss(){this._tone(200,'triangle',0.18,0.1)},
+  // Level-up fanfare
+  levelUp(){[392,523,659,784,1047].forEach((f,i)=>this._tone(f,'sine',0.35,0.2,i*0.12))}
+};
+let CL=null; // current lesson id
+let prevScreen='profiles';
+
+// ═══════════════════════════════════════════════════════
+//  APP NAVIGATION
+// ═══════════════════════════════════════════════════════
+const App={
+  go(id,back){
+    if(!back) prevScreen=document.querySelector('.screen.active')?.id.replace('s-','')||'profiles';
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('s-'+id)?.classList.add('active');
+    if(id==='profiles') Profiles.render();
+    else if(id==='worldmap') WorldMap.render();
+    else if(id==='settings') Settings.render();
+    else if(id==='dashboard') Dashboard.render();
+    else if(id==='certificate') Cert.render();
+  },
+  goBack(){this.go(prevScreen,true)}
+};
+
+// ═══════════════════════════════════════════════════════
+//  PROFILES
+// ═══════════════════════════════════════════════════════
+const Profiles={
+  selAv(el){document.querySelectorAll('.av-opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel')},
+  selLay(el){document.querySelectorAll('.lay-opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel')},
+  create(){
+    const name=document.getElementById('pname').value.trim();
+    if(!name){alert('Vul je naam in!');return}
+    const av=document.querySelector('.av-opt.sel')?.dataset.av||'🧙';
+    const lay=document.querySelector('.lay-opt.sel')?.dataset.lay||'qwerty';
+    const p={id:Date.now().toString(),name,avatar:av,layout:lay,
+      xp:0,lessons:{},keyStats:{},wpmHistory:[],totalSec:0,badges:[],streak:0};
+    D.profiles.push(p);Store.save(D);
+    AP=p;CL=null;
+    document.getElementById('pname').value='';
+    D.settings.layout=lay;Store.save(D);
+    App.go('worldmap');
+  },
+  select(id){
+    AP=D.profiles.find(p=>p.id===id);
+    if(AP){D.settings.layout=AP.layout;Store.save(D);App.go('worldmap')}
+  },
+  delete(id){
+    if(!confirm('Profiel verwijderen? Dit kan niet ongedaan worden!'))return;
+    D.profiles=D.profiles.filter(p=>p.id!==id);Store.save(D);
+    if(AP?.id===id)AP=null;
+    Profiles.render();
+  },
+  render(){
+    const g=document.getElementById('profiles-grid');
+    g.innerHTML=D.profiles.map(p=>{
+      const lv=getLevel(p.xp);
+      return`<div class="pcard" onclick="Profiles.select('${p.id}')">
+        <div class="pcard-av">${p.avatar}</div>
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-info">Level ${lv.num} — ${Object.keys(p.lessons).length} lessen</div>
+        <div class="pcard-badge">${p.layout.toUpperCase()}</div>
+      </div>`;
+    }).join('')+`<div class="pcard new-p" onclick="App.go('create-profile')">
+      <div style="font-size:2.5rem">➕</div>
+      <div style="font-weight:600;margin-top:6px">Nieuwe Ridder</div>
+    </div>`;
+    // settings profiles list
+    const sp=document.getElementById('set-profiles');
+    if(sp)sp.innerHTML=D.profiles.map(p=>`<div class="set-row">
+      <div><div class="set-lbl">${p.avatar} ${p.name}</div><div class="set-dsc">${p.layout.toUpperCase()} · Level ${getLevel(p.xp).num}</div></div>
+      <button class="btn btn-sec btn-sm" onclick="Profiles.delete('${p.id}')">🗑️</button>
+    </div>`).join('');
+  }
+};
+
+function getLevel(xp){
+  let lv=1;
+  for(let i=LEVELS.length-1;i>=0;i--){if(xp>=LEVELS[i].xp){lv=i+1;break}}
+  const cur=LEVELS[lv-1];const next=LEVELS[lv]||null;
+  const pct=next?Math.round(((xp-cur.xp)/(next.xp-cur.xp))*100):100;
+  return{num:lv,title:cur.title,pct,xpForNext:next?next.xp-xp:0};
+}
+
+// ═══════════════════════════════════════════════════════
+//  WORLD MAP
+// ═══════════════════════════════════════════════════════
+const WorldMap={
+  render(){
+    if(!AP)return;
+    document.getElementById('wm-av').textContent=AP.avatar;
+    document.getElementById('wm-name').textContent=AP.name;
+    const lv=getLevel(AP.xp);
+    document.getElementById('wm-lv').textContent=lv.num;
+    document.getElementById('wm-lv-title').textContent=lv.title;
+    document.getElementById('wm-xp').style.width=lv.pct+'%';
+    const nextLvl=LEVELS[lv.num]||null;
+    document.getElementById('wm-xp-info').textContent=nextLvl
+      ?`${AP.xp} XP — nog ${lv.xpForNext} XP voor Level ${lv.num+1}`
+      :`${AP.xp} XP — 🏆 Maximaal level bereikt!`;
+    const w=document.getElementById('worlds-wrap');
+    w.innerHTML=WORLDS.map(world=>`
+      <div class="world-card">
+        <div class="world-hdr" style="background:${world.color}">
+          <span class="world-em">${world.emoji}</span>
+          <span class="world-nm">${world.name}</span>
+          <span class="world-prog">${this.worldProgress(world)} lessen klaar</span>
+        </div>
+        <div class="world-lessons">${world.lessons.map(id=>this.lessonNode(id)).join('')}</div>
+      </div>`).join('');
+  },
+  worldProgress(world){
+    return world.lessons.filter(id=>AP.lessons[id]?.stars>0).length+'/'+world.lessons.length;
+  },
+  lessonNode(id){
+    const les=LESSONS.find(l=>l.id===id);
+    const done=AP.lessons[id];
+    const isFirst=id===1;
+    const prevDone=id===1||AP.lessons[id-1]?.stars>0;
+    let cls='lnode ';
+    let stars='';
+    if(done?.stars>=3){cls+='d3';stars='⭐⭐⭐'}
+    else if(done?.stars===2){cls+='d2';stars='⭐⭐'}
+    else if(done?.stars===1){cls+='d1';stars='⭐'}
+    else if(prevDone){cls+='avail';stars='▶'}
+    else{cls+='locked';stars='🔒'}
+    const onclick=prevDone?`onclick="Lesson.intro(${id})"`:'';
+    return`<div class="${cls}" ${onclick}>
+      <div class="lnode-c">${les.emoji}</div>
+      <div class="lnode-stars">${stars}</div>
+      <div class="lnode-lbl">${les.title.substring(0,18)}</div>
+    </div>`;
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  LESSON
+// ═══════════════════════════════════════════════════════
+const Lesson={
+  intro(id){
+    CL=id;
+    const les=LESSONS.find(l=>l.id===id);
+    const lay=AP.layout;
+    document.getElementById('intro-ttl').textContent=`Les ${id}: ${les.title}`;
+    document.getElementById('intro-story').innerHTML=`<strong>🐧 Pip:</strong> ${les.story}`;
+    const nk=document.getElementById('intro-nk');
+    const keys=les.newKeys[lay];
+    nk.innerHTML=keys.length?keys.map(k=>`<span class="nk-pill">${k}</span>`).join(''):'<span style="color:var(--mut)">Alle bekende toetsen — review!</span>';
+    document.getElementById('intro-fhint').innerHTML=les.fhint;
+    App.go('lesson-intro');
+  },
+  startEx(idx){
+    const les=LESSONS.find(l=>l.id===CL);
+    const lay=AP.layout;
+    const exs=les.ex[lay];
+    if(idx>=exs.length){this.showResult();return}
+    document.getElementById('prac-ttl').textContent=`Les ${CL}: ${les.title}`;
+    document.getElementById('prac-en').textContent=`${idx+1}/${exs.length}`;
+    document.getElementById('pip-ht').textContent=les.pip||'Typ de letters die je ziet!';
+    Practice.start(exs[idx],idx,exs.length,les);
+    App.go('practice');
+  },
+  showResult(){
+    const les=LESSONS.find(l=>l.id===CL);
+    const wpm=Practice.lastStats.wpm||0;
+    const acc=Practice.lastStats.acc||0;
+    const time=Practice.lastStats.time||0;
+    const stars=acc>=95?3:acc>=80?2:acc>=65?1:0;
+    // Save
+    const prev=AP.lessons[CL]||{};
+    if(!prev.stars||stars>prev.stars){
+      AP.lessons[CL]={stars,wpm,acc,completedAt:new Date().toISOString()};
+    }
+    // XP
+    const xpEarn=stars>0?les.xp:Math.floor(les.xp*.3);
+    AP.xp+=xpEarn;
+    AP.totalSec=(AP.totalSec||0)+time;
+    AP.wpmHistory=(AP.wpmHistory||[]).concat({date:new Date().toISOString(),wpm,lessonId:CL});
+    // Streak
+    AP.streak=(AP.streak||0)+1;
+    // Badges
+    const newBadges=[];
+    if(!AP.badges.includes('first-lesson')&&Object.keys(AP.lessons).length>=1){AP.badges.push('first-lesson');newBadges.push('first-lesson')}
+    if(!AP.badges.includes('three-stars')&&stars===3){AP.badges.push('three-stars');newBadges.push('three-stars')}
+    if(!AP.badges.includes('speed-demon')&&wpm>=30){AP.badges.push('speed-demon');newBadges.push('speed-demon')}
+    if(!AP.badges.includes('perfect')&&acc===100){AP.badges.push('perfect');newBadges.push('perfect')}
+    if(!AP.badges.includes('streak-5')&&AP.streak>=5){AP.badges.push('streak-5');newBadges.push('streak-5')}
+    if(les.badge&&!AP.badges.includes(les.badge)){AP.badges.push(les.badge);newBadges.push(les.badge)}
+    Store.save(D);
+    // UI
+    const msgs=['Geweldig!','Fantastisch!','Top gedaan!','Wauw, supergoed!','Jij bent een TypeRidder!'];
+    document.getElementById('res-ttl').textContent=msgs[Math.min(stars,msgs.length-1)]||'Goed gedaan!';
+    document.getElementById('res-msg').textContent=`Nauwkeurigheid: ${acc}% — Snelheid: ${wpm} WPM`;
+    document.getElementById('rv-w').textContent=wpm;
+    document.getElementById('rv-a').textContent=acc+'%';
+    document.getElementById('rv-t').textContent=time+'s';
+    document.getElementById('res-xp').textContent=`+${xpEarn} XP`;
+    document.getElementById('res-pip').textContent=stars>=3?'🥳':stars>=2?'😊':'🐧';
+    // Stars with animation + sound
+    ['rs1','rs2','rs3'].forEach((id,i)=>{
+      const el=document.getElementById(id);
+      el.classList.remove('lit');el.style.transitionDelay='0s';
+      if(i<stars)setTimeout(()=>{el.classList.add('lit');Sound.star(i);},400+i*350);
+    });
+    // Level-up check
+    const oldLevel=getLevel(AP.xp-xpEarn).num;
+    const newLevel=getLevel(AP.xp).num;
+    if(newLevel>oldLevel)setTimeout(()=>Sound.levelUp(),1600);
+    // Badges
+    document.getElementById('res-badges').innerHTML=newBadges.map(b=>`<div class="badge-chip">${BADGES[b].emoji} ${BADGES[b].label}</div>`).join('');
+    if(newBadges.length)setTimeout(()=>Sound.badge(),1800);
+    // Next button
+    const nextId=CL+1;
+    const nextLes=LESSONS.find(l=>l.id===nextId);
+    const nextBtn=document.getElementById('res-next');
+    if(nextLes){nextBtn.textContent='Volgende ➡️';nextBtn.onclick=()=>{Lesson.intro(nextId)}}
+    else{nextBtn.textContent='🗺️ Kaart';nextBtn.onclick=()=>App.go('worldmap')}
+    // Game btn - pass current lesson allowed keys to game
+    document.getElementById('res-game').onclick=()=>{Game.start(CL);App.go('game')};
+    App.go('result');
+  },
+  retry(){Lesson.startEx(0)},
+  goNext(){document.getElementById('res-next').onclick()}
+};
+
+// ═══════════════════════════════════════════════════════
+//  PRACTICE ENGINE
+// ═══════════════════════════════════════════════════════
+const Practice={
+  text:'',exIdx:0,exTotal:0,idx:0,errors:0,keystrokes:0,
+  startTime:null,timer:null,active:false,
+  lastStats:{wpm:0,acc:0,time:0},
+
+  start(text,exIdx,exTotal,les){
+    this.text=text;this.exIdx=exIdx;this.exTotal=exTotal;
+    this.idx=0;this.errors=0;this.keystrokes=0;this.charErr={};
+    this.startTime=null;this.active=true;
+    clearInterval(this.timer);
+    this.renderText();
+    Keyboard.render(AP.layout);
+    Keyboard.highlight(text[0],AP.layout);
+    document.getElementById('st-t').textContent='0:00';
+    document.getElementById('st-a').textContent='–';
+    document.getElementById('st-w').textContent='0';
+    const kw=document.getElementById('kb-wrap');
+    kw.style.display=document.getElementById('s-kb')?.checked===false?'none':'';
+  },
+
+  renderText(){
+    const t=this.text;
+    document.getElementById('prac-text').innerHTML=t.split('').map((c,i)=>{
+      const sp=c===' '?' space':'';
+      const cls=i<this.idx?(this.charErr?.[i]?'bad':'ok'):i===this.idx?'cur':'pending';
+      return`<span class="ch${sp} ${cls}" data-i="${i}">${c===' '?'&nbsp;':c}</span>`;
+    }).join('');
+    // Scroll current char into view
+    setTimeout(()=>document.querySelector('.ch.cur')?.scrollIntoView({block:'nearest',inline:'center'}),0);
+  },
+
+  handleKey(e){
+    if(!this.active||e.ctrlKey||e.altKey||e.metaKey)return;
+    if(e.key==='Escape'){this.active=false;App.go('worldmap');return}
+    if(e.key==='Shift'||e.key==='CapsLock'||e.key==='Tab')return;
+    e.preventDefault();
+    const expected=this.text[this.idx];
+    if(expected===undefined)return;
+    if(!this.startTime){this.startTime=Date.now();this.startTimer()}
+    const k=e.key;
+    const correct=k===expected;
+    if(!this.charErr)this.charErr={};
+    if(correct){
+      this.keystrokes++;
+      Sound.ok();
+      const el=document.querySelector(`.ch[data-i="${this.idx}"]`);
+      if(el){el.className='ch ok';if(expected===' ')el.className='ch space ok'}
+      Keyboard.flash(expected,AP.layout,'ok');
+      this.idx++;
+      if(this.idx>=this.text.length){this.complete();return}
+      const next=this.text[this.idx];
+      document.querySelector(`.ch[data-i="${this.idx}"]`)?.setAttribute('class',`ch${next===' '?' space':''} cur`);
+      Keyboard.highlight(next,AP.layout);
+      this.updateStats();
+    } else {
+      this.errors++;this.keystrokes++;
+      Sound.bad();
+      this.charErr[this.idx]=true;
+      Keyboard.flash(k,AP.layout,'bad');
+      const el=document.querySelector(`.ch[data-i="${this.idx}"]`);
+      if(el)el.style.animation='shake .3s';
+      setTimeout(()=>{if(el)el.style.animation=''},300);
+      // Track weak keys
+      if(AP&&expected.match(/[a-z0-9,.; ]/i)){
+        if(!AP.keyStats[expected])AP.keyStats[expected]={a:0,e:0};
+        AP.keyStats[expected].a++;AP.keyStats[expected].e++;
+      }
+      this.updateStats();
+    }
+    // Track key stats for correct presses too
+    if(correct&&AP&&expected.match(/[a-z0-9,.; ]/i)){
+      if(!AP.keyStats[expected])AP.keyStats[expected]={a:0,e:0};
+      AP.keyStats[expected].a++;
+    }
+  },
+
+  startTimer(){
+    this.timer=setInterval(()=>{
+      if(!this.active){clearInterval(this.timer);return}
+      const sec=Math.floor((Date.now()-this.startTime)/1000);
+      const m=Math.floor(sec/60),s=sec%60;
+      document.getElementById('st-t').textContent=m+':'+(s<10?'0':'')+s;
+    },500);
+  },
+
+  updateStats(){
+    const total=this.text.length;
+    const done=this.idx;
+    const acc=done?Math.round(((done-this.errors)/done)*100):100;
+    document.getElementById('st-a').textContent=acc+'%';
+    if(this.startTime&&done>0){
+      const mins=(Date.now()-this.startTime)/60000;
+      const wpm=Math.round((done/5)/mins);
+      document.getElementById('st-w').textContent=Math.min(wpm,200);
+    }
+  },
+
+  complete(){
+    this.active=false;clearInterval(this.timer);
+    const sec=this.startTime?Math.round((Date.now()-this.startTime)/1000):0;
+    const acc=this.keystrokes?Math.round(((this.keystrokes-this.errors)/this.keystrokes)*100):100;
+    const wpm=sec>0?Math.round((this.text.length/5)/(sec/60)):0;
+    this.lastStats={wpm:Math.min(wpm,200),acc,time:sec};
+    Store.save(D);
+    // Next exercise or result
+    const nextIdx=this.exIdx+1;
+    if(nextIdx<this.exTotal){
+      Sound.exDone();
+      setTimeout(()=>Lesson.startEx(nextIdx),700);
+      const el=document.getElementById('prac-text');
+      el.style.background='var(--ok-l)';setTimeout(()=>el.style.background='',700);
+    } else {
+      Sound.exDone();
+      setTimeout(()=>Lesson.showResult(),800);
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  VISUAL KEYBOARD
+// ═══════════════════════════════════════════════════════
+const Keyboard={
+  render(lay){
+    const rows=KB[lay]||KB.qwerty;
+    let html='<div class="keyboard">';
+    for(const row of rows){
+      html+='<div class="kb-row">';
+      for(const k of row){
+        const[ch,lbl,fc,wc='',hk]=k;
+        html+=`<div class="key ${fc}${wc?' '+wc:''}${hk?' hk':''}" data-k="${ch}">${lbl}</div>`;
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+    document.getElementById('kb-cont').innerHTML=html;
+  },
+  highlight(ch,lay){
+    document.querySelectorAll('.key.ak').forEach(k=>k.classList.remove('ak'));
+    if(!ch)return;
+    const lc=ch.toLowerCase();
+    const el=document.querySelector(`.key[data-k="${lc}"]`)||document.querySelector(`.key[data-k="${ch}"]`);
+    if(el)el.classList.add('ak');
+    if(ch!==lc){// Uppercase — also highlight shift
+      const row=KB[lay]||KB.qwerty;
+      // Find which side the key is on
+      let isLeft=false;
+      for(const r of row)for(const k of r)if(k[0]===lc&&k[2].includes('l'))isLeft=true;
+      const sh=document.querySelector(`.key[data-k="${isLeft?'RSH':'LSH'}"]`);
+      if(sh)sh.classList.add('ak');
+    }
+  },
+  flash(ch,lay,type){
+    const lc=ch.toLowerCase();
+    const el=document.querySelector(`.key[data-k="${lc}"]`)||document.querySelector(`.key[data-k="${ch}"]`);
+    if(!el)return;
+    el.classList.add('hit-'+type);
+    setTimeout(()=>el.classList.remove('hit-ok','hit-bad'),300);
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  MINI-GAME
+// ═══════════════════════════════════════════════════════
+const Game={
+  active:false,score:0,letters:new Map(),spawnInt:null,timerInt:null,timeLeft:45,chars:[],
+
+  start(lessonId){
+    const les=LESSONS.find(l=>l.id===lessonId);
+    const lay=AP?.layout||'qwerty';
+    // Collect allowed chars from this and previous lessons
+    const allLessons=LESSONS.filter(l=>l.id<=lessonId);
+    const charSet=new Set();
+    allLessons.forEach(l=>(l.newKeys[lay]||[]).forEach(k=>{if(k.length===1&&k.match(/[a-z]/i))charSet.add(k.toLowerCase())}));
+    this.chars=charSet.size?[...charSet]:'fjdk'.split('');
+    this.active=true;this.score=0;this.timeLeft=45;this.letters.clear();
+    document.getElementById('g-s').textContent='0';
+    document.getElementById('g-t').textContent='45';
+    document.getElementById('g-area').innerHTML='';
+    document.getElementById('g-end').classList.remove('show');
+    this.spawnInt=setInterval(()=>this.spawn(),1400);
+    this.timerInt=setInterval(()=>{
+      this.timeLeft--;
+      document.getElementById('g-t').textContent=this.timeLeft;
+      if(this.timeLeft<=0){this.stop();this.end()}
+    },1000);
+  },
+
+  spawn(){
+    if(!this.active)return;
+    const ch=this.chars[Math.floor(Math.random()*this.chars.length)];
+    const id=Date.now()+Math.random();
+    const area=document.getElementById('g-area');
+    if(!area)return;
+    const el=document.createElement('div');
+    el.className='fl-letter';
+    el.textContent=ch.toUpperCase();
+    el.dataset.ch=ch;el.dataset.id=id;
+    const x=5+Math.random()*82;
+    el.style.cssText=`left:${x}%;top:-60px;`;
+    area.appendChild(el);
+    const dur=Math.max(1800,3200-((45-this.timeLeft)*30));
+    let start=null;
+    const areaH=Math.max(area.clientHeight||0,350);
+    const animate=(ts)=>{
+      if(!start)start=ts;
+      const prog=(ts-start)/dur;
+      if(!document.getElementById(el.dataset?.id+'_anchor')&&el.parentNode){
+        el.style.top=(prog*areaH-40)+'px';
+        if(prog<1&&this.active)requestAnimationFrame(animate);
+        else if(el.parentNode){el.parentNode.removeChild(el);this.letters.delete(id)}
+      }
+    };
+    requestAnimationFrame(animate);
+    this.letters.set(id,{ch,el});
+  },
+
+  catch(ch){
+    for(const[id,lt]of this.letters){
+      if(lt.ch===ch&&lt.el.parentNode){
+        lt.el.classList.add('caught');
+        const el=lt.el;
+        setTimeout(()=>el.parentNode?.removeChild(el),350);
+        this.letters.delete(id);
+        this.score++;
+        Sound.catch();
+        document.getElementById('g-s').textContent=this.score;
+        return true;
+      }
+    }
+    return false;
+  },
+
+  stop(){
+    this.active=false;
+    clearInterval(this.spawnInt);clearInterval(this.timerInt);
+  },
+
+  end(){
+    const xpBonus=this.score*5;
+    if(AP){AP.xp+=xpBonus;Store.save(D)}
+    document.getElementById('g-fin').textContent=this.score;
+    document.getElementById('g-xpb').textContent=xpBonus;
+    document.getElementById('g-end').classList.add('show');
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════════
+const Settings={
+  render(){
+    const s=D.settings||{};
+    document.getElementById('s-dys').checked=!!s.dyslexic;
+    document.getElementById('s-hc').checked=!!s.hiCon;
+    document.getElementById('s-cb').checked=!!s.colorblind;
+    document.getElementById('s-fs').value=s.fontSize||'';
+    document.getElementById('s-snd').checked=s.sound!==false;
+    document.getElementById('s-lay').value=AP?.layout||s.layout||'qwerty';
+    document.getElementById('s-kb').checked=s.showKb!==false;
+    Profiles.render();
+  },
+  save(){
+    const s=D.settings||{};
+    s.dyslexic=document.getElementById('s-dys').checked;
+    s.hiCon=document.getElementById('s-hc').checked;
+    s.colorblind=document.getElementById('s-cb').checked;
+    s.fontSize=document.getElementById('s-fs').value;
+    s.sound=document.getElementById('s-snd').checked;
+    s.showKb=document.getElementById('s-kb').checked;
+    D.settings=s;Store.save(D);this.apply();
+    // Bevestigingsgeluidje bij aanzetten
+    if(s.sound)Sound.ok();
+  },
+  saveLayout(){
+    const lay=document.getElementById('s-lay').value;
+    D.settings.layout=lay;
+    if(AP){AP.layout=lay;Store.save(D)}
+    this.apply();
+  },
+  apply(){
+    const s=D.settings||{};
+    const b=document.body;
+    b.classList.toggle('dyslexic',!!s.dyslexic);
+    b.classList.toggle('hi-con',!!s.hiCon);
+    b.classList.toggle('colorblind',!!s.colorblind);
+    b.classList.remove('fnt-lg','fnt-xl');
+    if(s.fontSize)b.classList.add(s.fontSize);
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════
+const Dashboard={
+  prof:null,
+  render(){
+    const profiles=D.profiles;
+    if(!profiles.length){
+      document.getElementById('dash-stats').innerHTML='<p style="color:var(--mut);padding:20px">Nog geen profielen aangemaakt.</p>';
+      return;
+    }
+    this.prof=this.prof&&profiles.find(p=>p.id===this.prof.id)?this.prof:profiles[0];
+    // Profile selector
+    document.getElementById('dash-psel').innerHTML=profiles.map(p=>
+      `<button class="btn btn-sm ${p.id===this.prof.id?'btn-pri':'btn-sec'}" onclick="Dashboard.selectProf('${p.id}')">${p.avatar} ${p.name}</button>`
+    ).join('');
+    this.renderProf();
+  },
+  selectProf(id){this.prof=D.profiles.find(p=>p.id===id);this.renderProf();
+    document.querySelectorAll('#dash-psel .btn').forEach(b=>{b.classList.remove('btn-pri');b.classList.add('btn-sec')});
+    document.querySelector(`#dash-psel .btn[onclick*="${id}"]`)?.classList.replace('btn-sec','btn-pri');
+  },
+  renderProf(){
+    const p=this.prof;
+    if(!p)return;
+    const lessons=Object.values(p.lessons);
+    const done=lessons.length;
+    const avgWpm=done?Math.round(lessons.reduce((a,l)=>a+l.wpm,0)/done):0;
+    const avgAcc=done?Math.round(lessons.reduce((a,l)=>a+l.acc,0)/done):0;
+    const mins=Math.round((p.totalSec||0)/60);
+    const lv=getLevel(p.xp);
+    document.getElementById('dash-stats').innerHTML=`
+      <div class="dstat"><div class="dv">${done}</div><div class="dl">Lessen voltooid</div></div>
+      <div class="dstat"><div class="dv">${avgWpm}</div><div class="dl">Gem. WPM</div></div>
+      <div class="dstat"><div class="dv">${avgAcc}%</div><div class="dl">Gem. nauwkeurig</div></div>
+      <div class="dstat"><div class="dv">${mins}</div><div class="dl">Minuten geoefend</div></div>
+      <div class="dstat"><div class="dv">${p.xp}</div><div class="dl">XP (Level ${lv.num})</div></div>
+      <div class="dstat"><div class="dv">${(p.badges||[]).length}</div><div class="dl">Badges</div></div>`;
+    // WPM chart
+    const hist=(p.wpmHistory||[]).slice(-20);
+    const maxW=Math.max(...hist.map(h=>h.wpm),1);
+    document.getElementById('wpm-bars').innerHTML=hist.map(h=>{
+      const pct=Math.round((h.wpm/maxW)*100);
+      const d=new Date(h.date).toLocaleDateString('nl-BE');
+      return`<div class="cbar" style="height:${Math.max(pct,5)}%" title="Les ${h.lessonId}: ${h.wpm} WPM (${d})"></div>`;
+    }).join('')||'<span style="color:var(--mut);font-size:.9rem">Nog geen data</span>';
+    // Weak keys
+    const ks=p.keyStats||{};
+    const weak=Object.entries(ks)
+      .filter(([,v])=>v.a>=5&&v.e/v.a>0.15)
+      .sort((a,b)=>b[1].e/b[1].a-a[1].e/a[1].a).slice(0,8);
+    document.getElementById('wk-keys').innerHTML=weak.length?
+      weak.map(([k,v])=>`<span class="wk-key" title="${v.e} fouten op ${v.a} aanslagen">${k.toUpperCase()} (${Math.round(v.e/v.a*100)}%)</span>`).join(''):
+      '<span style="color:var(--mut)">Nog geen fouten bijgehouden</span>';
+    // Lesson table
+    document.getElementById('les-tbl').innerHTML=`<table class="les-tbl">
+      <tr><th>Les</th><th>Titel</th><th>Sterren</th><th>WPM</th><th>Nauwkeurig</th></tr>
+      ${LESSONS.map(l=>{
+        const d=p.lessons[l.id];
+        if(!d)return`<tr><td>${l.id}</td><td>${l.title}</td><td>-</td><td>-</td><td>-</td></tr>`;
+        const s='⭐'.repeat(d.stars||0);
+        return`<tr><td>${l.id}</td><td>${l.emoji} ${l.title}</td><td>${s}</td><td>${d.wpm}</td><td>${d.acc}%</td></tr>`;
+      }).join('')}
+    </table>`;
+  },
+  exportCSV(){
+    const p=this.prof;if(!p)return;
+    const rows=[['Les','Titel','Sterren','WPM','Nauwkeurig','Datum']];
+    LESSONS.forEach(l=>{const d=p.lessons[l.id];if(d)rows.push([l.id,l.title,d.stars,d.wpm,d.acc+'%',d.completedAt?.slice(0,10)])});
+    const csv=rows.map(r=>r.join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+    a.download=`typeridder_${p.name}.csv`;a.click();
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  CERTIFICATE
+// ═══════════════════════════════════════════════════════
+const Cert={
+  render(){
+    const p=Dashboard.prof||AP||D.profiles[0];
+    if(!p)return;
+    document.getElementById('cert-name').textContent=p.name;
+    document.getElementById('cert-date').textContent='Datum: '+new Date().toLocaleDateString('nl-BE');
+    const done=Object.keys(p.lessons).length;
+    const avgWpm=done?Math.round(Object.values(p.lessons).reduce((a,l)=>a+l.wpm,0)/done):0;
+    const avgAcc=done?Math.round(Object.values(p.lessons).reduce((a,l)=>a+l.acc,0)/done):0;
+    document.getElementById('cert-sts').innerHTML=`
+      <div class="cst"><div class="cv">${done}</div><div class="cl">Lessen</div></div>
+      <div class="cst"><div class="cv">${avgWpm}</div><div class="cl">Gem. WPM</div></div>
+      <div class="cst"><div class="cv">${avgAcc}%</div><div class="cl">Nauwkeurig</div></div>
+      <div class="cst"><div class="cv">${(p.badges||[]).length}</div><div class="cl">Badges</div></div>`;
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  EVENT HANDLERS & INIT
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(document.querySelector('#s-practice.active'))Practice.handleKey(e);
+  else if(document.querySelector('#s-game.active')&&Game.active){
+    if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){e.preventDefault();Game.catch(e.key.toLowerCase())}
+  }
+});
+
+// Touch keyboard for game (on-screen)
+document.addEventListener('DOMContentLoaded',()=>{
+  Settings.apply();
+  if(D.profiles.length===0)App.go('welcome');
+  else App.go('profiles');
+});
+</script>
+</body>
+</html>
